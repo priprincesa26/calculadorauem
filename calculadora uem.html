@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Pontuação da UEM</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --dark-pink: #3a0a2a;
+            --medium-pink: #7a2c5e;
+            --light-pink: #d23c77;
+            --highlight-pink: #ff8fab;
+            --text-light: #f8e1ef;
+            --text-lighter: #ffffff;
+            --correct: #7ad67a;
+            --incorrect: #ff6b6b;
+        }
+
+        /* --- LAYOUT GLOBAL --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #1f0a1a, #3a0a2a);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1600px;
+            padding: 20px;
+            box-sizing: border-box;
+            height: 95%;
+            max-height: 900px;
+        }
+
+        /* --- ESTILO DOS PAINÉIS --- */
+        .container {
+            background: rgba(58, 10, 42, 0.85);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(210, 60, 119, 0.2);
+            border: 1px solid var(--medium-pink);
+            transition: box-shadow 0.3s ease; 
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .container:hover {
+            box-shadow: 0 8px 40px rgba(210, 60, 119, 0.4);
+        }
+
+        /* --- ESTILOS DOS COMPONENTES INTERNOS --- */
+        h1 {
+            color: var(--highlight-pink);
+            text-align: center;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+            text-shadow: 0 0 10px rgba(255, 143, 171, 0.5);
+            animation: pulse 2s infinite;
+            will-change: transform;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--highlight-pink);
+            letter-spacing: 0.5px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(122, 44, 94, 0.3);
+            border: 2px solid var(--medium-pink);
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+            color: var(--text-lighter);
+            transition: border-color 0.3s, box-shadow 0.3s, background-color 0.3s, transform 0.3s;
+        }
+        
+        input:focus {
+            border-color: var(--highlight-pink);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(255, 143, 171, 0.3);
+            background: rgba(122, 44, 94, 0.5);
+            transform: scale(1.01);
+        }
+        
+        button {
+            background: linear-gradient(135deg, var(--light-pink), var(--medium-pink));
+            color: var(--text-lighter);
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-top: auto;
+            box-shadow: 0 4px 15px rgba(210, 60, 119, 0.4);
+            text-transform: uppercase;
+            transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+            will-change: transform, box-shadow;
+        }
+        
+        button:hover {
+            background: linear-gradient(135deg, var(--medium-pink), var(--light-pink));
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 6px 20px rgba(210, 60, 119, 0.6);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        /* --- ESTILOS DO PAINEL DE RESULTADO --- */
+        .score-display {
+            font-size: 4.5em;
+            text-align: center;
+            color: var(--highlight-pink);
+            margin: 20px 0;
+            font-weight: bold;
+            text-shadow: 0 0 10px rgba(255, 143, 171, 0.5);
+            font-family: 'Arial', sans-serif;
+            animation: popIn 0.5s ease;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .result-container {
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: rgba(58, 10, 42, 0.5);
+        }
+        
+        th, td {
+            border: 1px solid var(--medium-pink);
+            padding: 12px;
+            text-align: left;
+            color: var(--text-light);
+            transition: background-color 0.2s;
+        }
+        
+        tr:hover td {
+            background-color: rgba(210, 60, 119, 0.1);
+        }
+        
+        th {
+            background: rgba(210, 60, 119, 0.3);
+            color: var(--highlight-pink);
+            font-weight: bold;
+        }
+        
+        tr:nth-child(even) {
+            background: rgba(122, 44, 94, 0.1);
+        }
+        
+        .correct { color: var(--correct); font-weight: bold; }
+        .incorrect { color: var(--incorrect); font-weight: bold; }
+        
+        .section-title {
+            color: var(--highlight-pink);
+            border-bottom: 2px solid var(--medium-pink);
+            padding-bottom: 8px;
+            margin-top: 25px;
+            font-size: 1.3em;
+        }
+        
+        .explanation {
+            background: rgba(122, 44, 94, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid var(--highlight-pink);
+            line-height: 1.8;
+        }
+        
+        .highlight {
+            background: rgba(255, 143, 171, 0.3);
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--highlight-pink);
+        }
+        
+        .icon {
+            margin-right: 5px;
+            color: var(--highlight-pink);
+        }
+
+        /* --- RESPONSIVIDADE --- */
+        @media (max-width: 900px) {
+            body {
+                height: auto;
+                align-items: flex-start;
+            }
+            .main-content {
+                flex-direction: column;
+                height: auto;
+                max-height: none;
+                padding: 15px;
+            }
+            .container {
+                overflow-y: visible;
+            }
+             h1 {
+                font-size: 2em;
+            }
+            .score-display {
+                font-size: 4em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="main-content">
+        <!-- PAINEL ESQUERDO: INPUT -->
+        <div class="container input-container">
+            <h1><i class="fas fa-calculator"></i> Calculadora UEM</h1>
+            
+            <div class="input-group">
+                <label for="resposta"><i class="fas fa-pencil-alt icon"></i>Sua resposta (0-31):</label>
+                <input type="number" id="resposta" min="0" max="31" placeholder="Ex: 15">
+            </div>
+            
+            <div class="input-group">
+                <label for="gabarito"><i class="fas fa-check-circle icon"></i>Gabarito (0-31):</label>
+                <input type="number" id="gabarito" min="0" max="31" placeholder="Ex: 7">
+            </div>
+            
+            <button onclick="calcularPontuacao()"><i class="fas fa-play-circle"></i> Calcular Pontuação</button>
+        </div>
+
+        <!-- PAINEL DIREITO: RESULTADO (inicialmente oculto) -->
+        <div id="resultado" class="container result-container" style="display: none;">
+            <div id="pontuacao-display" class="score-display"></div>
+            
+            <div id="pontuacao" class="explanation"></div>
+            
+            <h3 class="section-title"><i class="fas fa-info-circle icon"></i>Detalhamento</h3>
+            <div id="detalhes"></div>
+        </div>
+    </main>
+
+    <script>
+        function calcularPontuacao() {
+            const resposta = parseInt(document.getElementById('resposta').value);
+            const gabarito = parseInt(document.getElementById('gabarito').value);
+            
+            if (isNaN(resposta) || isNaN(gabarito) || resposta < 0 || resposta > 31 || gabarito < 0 || gabarito > 31) {
+                alert("Por favor, insira valores válidos entre 0 e 31 para ambos os campos.");
+                return;
+            }
+            
+            const respostaBin = resposta.toString(2).padStart(5, '0');
+            const gabaritoBin = gabarito.toString(2).padStart(5, '0');
+            
+            const valoresAlternativas = [16, 8, 4, 2, 1];
+            
+            const alternativasResposta = [];
+            const alternativasGabarito = [];
+            
+            for (let i = 0; i < 5; i++) {
+                alternativasResposta.push({
+                    valor: valoresAlternativas[i],
+                    marcada: respostaBin[i] === '1'
+                });
+                
+                alternativasGabarito.push({
+                    valor: valoresAlternativas[i],
+                    correta: gabaritoBin[i] === '1'
+                });
+            }
+
+            // NOVO: Reverte os arrays para que a ordem seja 1, 2, 4, 8, 16 para exibição.
+            alternativasResposta.reverse();
+            alternativasGabarito.reverse();
+            
+            let marcouIncorreta = false;
+            let acertos = 0;
+            
+            // O loop de cálculo não precisa mudar, pois a lógica de bit é a mesma
+            for (let i = 0; i < 5; i++) {
+                // Usamos os arrays originais (antes da reversão) para verificação lógica
+                const originalIndex = 4 - i;
+                if (alternativasResposta[originalIndex].marcada && !alternativasGabarito[originalIndex].correta) {
+                    marcouIncorreta = true;
+                }
+                if (alternativasResposta[originalIndex].marcada && alternativasGabarito[originalIndex].correta) {
+                    acertos++;
+                }
+            }
+            
+            let pontuacao = 0;
+            let explicacao = "";
+            
+            if (marcouIncorreta) {
+                explicacao = `<i class="fas fa-times-circle" style="color:var(--incorrect)"></i> Você marcou pelo menos uma alternativa incorreta, portanto a questão foi <span class='highlight'>zerada</span>.`;
+                document.getElementById('pontuacao-display').innerHTML = "0.0";
+                document.getElementById('pontuacao-display').style.color = "var(--incorrect)";
+            } else {
+                const numCorretas = alternativasGabarito.filter(a => a.correta).length;
+                
+                let pontosPorAlternativa = 0;
+                switch(numCorretas) {
+                    case 1: pontosPorAlternativa = 6.0; break;
+                    case 2: pontosPorAlternativa = 3.0; break;
+                    case 3: pontosPorAlternativa = 2.0; break;
+                    case 4: pontosPorAlternativa = 1.5; break;
+                    case 5: pontosPorAlternativa = 1.2; break;
+                    default: pontosPorAlternativa = 0;
+                }
+                
+                pontuacao = acertos * pontosPorAlternativa;
+                
+                explicacao = `<i class="fas fa-check-circle" style="color:var(--correct)"></i> O gabarito tem <span class='highlight'>${numCorretas}</span> alternativa(s) correta(s) (${getAlternativasCorretas(alternativasGabarito)}).<br>`;
+                explicacao += `<i class="fas fa-bullseye" style="color:var(--highlight-pink)"></i> Você acertou <span class='highlight'>${acertos}</span> delas.<br>`;
+                explicacao += `<i class="fas fa-chart-bar" style="color:var(--highlight-pink)"></i> Como há ${numCorretas} alternativa(s) correta(s), cada acerto vale <span class='highlight'>${pontosPorAlternativa.toFixed(1)}</span> ponto(s).<br>`;
+                
+                document.getElementById('pontuacao-display').innerHTML = pontuacao.toFixed(1);
+                document.getElementById('pontuacao-display').style.color = "var(--correct)";
+            }
+            
+            // ATUALIZADO: Geração da tabela
+            document.getElementById('detalhes').innerHTML = `
+                <p><i class="fas fa-user-edit icon"></i><strong>Sua resposta:</strong> ${resposta}</p>
+                <p><i class="fas fa-clipboard-check icon"></i><strong>Gabarito:</strong> ${gabarito}</p>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Alternativa</th>
+                            <th>Sua marcação</th>
+                            <th>Correta no gabarito</th>
+                            <th>Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    ${alternativasResposta.map((alt, i) => `
+                        <tr>
+                            <td>${['01', '02', '04', '08', '16'][i]}</td>
+                            <td>${alt.marcada ? '<i class="fas fa-check" style="color:var(--highlight-pink)"></i>' : '<i class="fas fa-times" style="color:var(--medium-pink)"></i>'}</td>
+                            <td>${alternativasGabarito[i].correta ? '<i class="fas fa-check" style="color:var(--highlight-pink)"></i>' : '<i class="fas fa-times" style="color:var(--medium-pink)"></i>'}</td>
+                            <td class="${getClasseResultado(alt.marcada, alternativasGabarito[i].correta)}">
+                                ${getTextoResultado(alt.marcada, alternativasGabarito[i].correta)}
+                            </td>
+                        </tr>
+                    `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            document.getElementById('pontuacao').innerHTML = explicacao;
+            const resultadoEl = document.getElementById('resultado');
+            resultadoEl.style.display = 'flex';
+            
+            if (window.innerWidth <= 900) {
+                resultadoEl.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        function getAlternativasCorretas(alternativas) {
+            // Ordena para exibir sempre do menor para o maior na explicação
+            const corretas = alternativas.filter(a => a.correta).map(a => a.valor).sort((a,b) => a - b);
+            return corretas.join(', ');
+        }
+        
+        function getClasseResultado(marcada, correta) {
+            if (marcada && correta) return 'correct';
+            if (marcada && !correta) return 'incorrect';
+            return '';
+        }
+        
+        function getTextoResultado(marcada, correta) {
+            if (marcada && correta) return '<i class="fas fa-check-circle" style="color:var(--correct)"></i> Acerto';
+            if (marcada && !correta) return '<i class="fas fa-times-circle" style="color:var(--incorrect)"></i> Erro (marcou incorreta)';
+            if (!marcada && correta) return '<i class="fas fa-exclamation-triangle" style="color:var(--highlight-pink)"></i> Não marcou (deveria)';
+            return '<i class="fas fa-minus" style="color:var(--medium-pink)"></i> Não marcou (ok)';
+        }
+    </script>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Pontuação da UEM</title>
+    <title>Calculadora de Pontuação da UEM - 50 Questões</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -15,6 +15,7 @@
             --text-lighter: #ffffff;
             --correct: #7ad67a;
             --incorrect: #ff6b6b;
+            --partial: #ffa500;
         }
 
         /* --- LAYOUT GLOBAL --- */
@@ -39,7 +40,7 @@
             display: flex;
             gap: 20px;
             width: 100%;
-            max-width: 1600px;
+            max-width: 1800px;
             padding: 20px;
             box-sizing: border-box;
             height: 95%;
@@ -206,6 +207,7 @@
         
         .correct { color: var(--correct); font-weight: bold; }
         .incorrect { color: var(--incorrect); font-weight: bold; }
+        .partial { color: var(--partial); font-weight: bold; }
         
         .section-title {
             color: var(--highlight-pink);
@@ -236,6 +238,82 @@
             margin-right: 5px;
             color: var(--highlight-pink);
         }
+        
+        /* --- NOVOS ESTILOS PARA A VERSÃO EXPANDIDA --- */
+        .questions-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .question-input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .question-label {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .question-input {
+            padding: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .question-result {
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            background: rgba(122, 44, 94, 0.3);
+            border: 1px solid var(--medium-pink);
+        }
+        
+        .question-result:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(255, 143, 171, 0.5);
+        }
+        
+        .question-result.correct {
+            background: rgba(122, 214, 122, 0.3);
+            border-color: var(--correct);
+        }
+        
+        .question-result.partial {
+            background: rgba(255, 165, 0, 0.3);
+            border-color: var(--partial);
+        }
+        
+        .question-result.incorrect {
+            background: rgba(255, 107, 107, 0.3);
+            border-color: var(--incorrect);
+        }
+        
+        .question-result.active {
+            box-shadow: 0 0 15px rgba(255, 143, 171, 0.8);
+            transform: scale(1.05);
+        }
+        
+        .question-number {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .question-score {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
 
         /* --- RESPONSIVIDADE --- */
         @media (max-width: 900px) {
@@ -258,6 +336,21 @@
             .score-display {
                 font-size: 4em;
             }
+            .questions-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .results-grid {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .questions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .results-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
     </style>
 </head>
@@ -266,42 +359,98 @@
     <main class="main-content">
         <!-- PAINEL ESQUERDO: INPUT -->
         <div class="container input-container">
-            <h1><i class="fas fa-calculator"></i> Calculadora UEM</h1>
+            <h1><i class="fas fa-calculator"></i> Calculadora UEM - 50 Questões</h1>
             
-            <div class="input-group">
-                <label for="resposta"><i class="fas fa-pencil-alt icon"></i>Sua resposta (0-31):</label>
-                <input type="number" id="resposta" min="0" max="31" placeholder="Ex: 15">
+            <h3 class="section-title"><i class="fas fa-user-edit icon"></i>Suas Respostas (00-31)</h3>
+            <div class="questions-grid" id="respostas-grid">
+                <!-- Gerado dinamicamente pelo JavaScript -->
             </div>
             
-            <div class="input-group">
-                <label for="gabarito"><i class="fas fa-check-circle icon"></i>Gabarito (0-31):</label>
-                <input type="number" id="gabarito" min="0" max="31" placeholder="Ex: 7">
+            <h3 class="section-title"><i class="fas fa-clipboard-check icon"></i>Gabarito (00-31)</h3>
+            <div class="questions-grid" id="gabarito-grid">
+                <!-- Gerado dinamicamente pelo JavaScript -->
             </div>
             
-            <button onclick="calcularPontuacao()"><i class="fas fa-play-circle"></i> Calcular Pontuação</button>
+            <button onclick="corrigirProva()"><i class="fas fa-check-circle"></i> Corrigir Prova</button>
         </div>
 
         <!-- PAINEL DIREITO: RESULTADO (inicialmente oculto) -->
         <div id="resultado" class="container result-container" style="display: none;">
             <div id="pontuacao-display" class="score-display"></div>
             
+            <h3 class="section-title"><i class="fas fa-chart-bar icon"></i>Resultado por Questão</h3>
+            <div class="results-grid" id="resultados-questoes">
+                <!-- Gerado dinamicamente pelo JavaScript -->
+            </div>
+            
             <div id="pontuacao" class="explanation"></div>
             
-            <h3 class="section-title"><i class="fas fa-info-circle icon"></i>Detalhamento</h3>
+            <h3 class="section-title"><i class="fas fa-info-circle icon"></i>Detalhamento da Questão Selecionada</h3>
             <div id="detalhes"></div>
         </div>
     </main>
 
     <script>
-        function calcularPontuacao() {
-            const resposta = parseInt(document.getElementById('resposta').value);
-            const gabarito = parseInt(document.getElementById('gabarito').value);
+        // Dados globais para armazenar os resultados das questões
+        let resultadosQuestoes = [];
+        let questaoSelecionada = null;
+        
+        // Inicializa os inputs das questões
+        function inicializarInputs() {
+            const respostasGrid = document.getElementById('respostas-grid');
+            const gabaritoGrid = document.getElementById('gabarito-grid');
             
-            if (isNaN(resposta) || isNaN(gabarito) || resposta < 0 || resposta > 31 || gabarito < 0 || gabarito > 31) {
-                alert("Por favor, insira valores válidos entre 0 e 31 para ambos os campos.");
-                return;
+            respostasGrid.innerHTML = '';
+            gabaritoGrid.innerHTML = '';
+            
+            for (let i = 1; i <= 50; i++) {
+                // Inputs para respostas
+                const respostaDiv = document.createElement('div');
+                respostaDiv.className = 'question-input-group';
+                respostaDiv.innerHTML = `
+                    <label class="question-label">Q${i}</label>
+                    <input type="number" id="resposta-${i}" class="question-input" min="0" max="31" placeholder="00">
+                `;
+                respostasGrid.appendChild(respostaDiv);
+                
+                // Inputs para gabarito
+                const gabaritoDiv = document.createElement('div');
+                gabaritoDiv.className = 'question-input-group';
+                gabaritoDiv.innerHTML = `
+                    <label class="question-label">Q${i}</label>
+                    <input type="number" id="gabarito-${i}" class="question-input" min="0" max="31" placeholder="00">
+                `;
+                gabaritoGrid.appendChild(gabaritoDiv);
+            }
+        }
+        
+        // Função principal para corrigir a prova
+        function corrigirProva() {
+            resultadosQuestoes = [];
+            let notaFinal = 0;
+            
+            // Coletar e validar dados
+            for (let i = 1; i <= 50; i++) {
+                const resposta = parseInt(document.getElementById(`resposta-${i}`).value);
+                const gabarito = parseInt(document.getElementById(`gabarito-${i}`).value);
+                
+                if (isNaN(resposta) || isNaN(gabarito) || resposta < 0 || resposta > 31 || gabarito < 0 || gabarito > 31) {
+                    alert(`Por favor, insira valores válidos entre 0 e 31 para a questão ${i}.`);
+                    return;
+                }
+                
+                // Calcular pontuação da questão
+                const resultado = calcularPontuacaoQuestao(resposta, gabarito, i);
+                resultadosQuestoes.push(resultado);
+                notaFinal += resultado.pontuacao;
             }
             
+            // Exibir resultados
+            exibirResultados(notaFinal);
+        }
+        
+        // Calcula a pontuação de uma questão individual
+        function calcularPontuacaoQuestao(resposta, gabarito, numeroQuestao) {
             const respostaBin = resposta.toString(2).padStart(5, '0');
             const gabaritoBin = gabarito.toString(2).padStart(5, '0');
             
@@ -322,14 +471,14 @@
                 });
             }
 
-            // NOVO: Reverte os arrays para que a ordem seja 1, 2, 4, 8, 16 para exibição.
+            // Reverte os arrays para que a ordem seja 1, 2, 4, 8, 16 para exibição
             alternativasResposta.reverse();
             alternativasGabarito.reverse();
             
             let marcouIncorreta = false;
             let acertos = 0;
             
-            // O loop de cálculo não precisa mudar, pois a lógica de bit é a mesma
+            // Loop de cálculo
             for (let i = 0; i < 5; i++) {
                 // Usamos os arrays originais (antes da reversão) para verificação lógica
                 const originalIndex = 4 - i;
@@ -342,12 +491,10 @@
             }
             
             let pontuacao = 0;
-            let explicacao = "";
+            let status = '';
             
             if (marcouIncorreta) {
-                explicacao = `<i class="fas fa-times-circle" style="color:var(--incorrect)"></i> Você marcou pelo menos uma alternativa incorreta, portanto a questão foi <span class='highlight'>zerada</span>.`;
-                document.getElementById('pontuacao-display').innerHTML = "0.0";
-                document.getElementById('pontuacao-display').style.color = "var(--incorrect)";
+                status = 'incorrect';
             } else {
                 const numCorretas = alternativasGabarito.filter(a => a.correta).length;
                 
@@ -363,18 +510,107 @@
                 
                 pontuacao = acertos * pontosPorAlternativa;
                 
-                explicacao = `<i class="fas fa-check-circle" style="color:var(--correct)"></i> O gabarito tem <span class='highlight'>${numCorretas}</span> alternativa(s) correta(s) (${getAlternativasCorretas(alternativasGabarito)}).<br>`;
-                explicacao += `<i class="fas fa-bullseye" style="color:var(--highlight-pink)"></i> Você acertou <span class='highlight'>${acertos}</span> delas.<br>`;
-                explicacao += `<i class="fas fa-chart-bar" style="color:var(--highlight-pink)"></i> Como há ${numCorretas} alternativa(s) correta(s), cada acerto vale <span class='highlight'>${pontosPorAlternativa.toFixed(1)}</span> ponto(s).<br>`;
-                
-                document.getElementById('pontuacao-display').innerHTML = pontuacao.toFixed(1);
-                document.getElementById('pontuacao-display').style.color = "var(--correct)";
+                // Determinar status
+                if (acertos === numCorretas && numCorretas > 0) {
+                    status = 'correct';
+                } else if (acertos > 0) {
+                    status = 'partial';
+                } else {
+                    status = 'incorrect';
+                }
             }
             
-            // ATUALIZADO: Geração da tabela
+            return {
+                numero: numeroQuestao,
+                resposta: resposta,
+                gabarito: gabarito,
+                pontuacao: pontuacao,
+                status: status,
+                marcouIncorreta: marcouIncorreta,
+                acertos: acertos,
+                alternativasResposta: alternativasResposta,
+                alternativasGabarito: alternativasGabarito
+            };
+        }
+        
+        // Exibe os resultados gerais e por questão
+        function exibirResultados(notaFinal) {
+            // Exibir nota final
+            document.getElementById('pontuacao-display').innerHTML = notaFinal.toFixed(1);
+            document.getElementById('pontuacao-display').style.color = "var(--highlight-pink)";
+            
+            // Explicação da nota final
+            const explicacao = `<i class="fas fa-chart-line" style="color:var(--highlight-pink)"></i> Sua pontuação final é <span class='highlight'>${notaFinal.toFixed(1)}</span> de um máximo de 300 pontos.`;
+            document.getElementById('pontuacao').innerHTML = explicacao;
+            
+            // Exibir resultados por questão
+            const resultadosGrid = document.getElementById('resultados-questoes');
+            resultadosGrid.innerHTML = '';
+            
+            resultadosQuestoes.forEach(resultado => {
+                const questaoDiv = document.createElement('div');
+                questaoDiv.className = `question-result ${resultado.status}`;
+                questaoDiv.innerHTML = `
+                    <div class="question-number">Q${resultado.numero}</div>
+                    <div class="question-score">${resultado.pontuacao.toFixed(1)}</div>
+                `;
+                questaoDiv.addEventListener('click', () => exibirDetalhesQuestao(resultado.numero));
+                resultadosGrid.appendChild(questaoDiv);
+            });
+            
+            // Exibir painel de resultados
+            const resultadoEl = document.getElementById('resultado');
+            resultadoEl.style.display = 'flex';
+            
+            // Selecionar automaticamente a primeira questão
+            if (resultadosQuestoes.length > 0) {
+                exibirDetalhesQuestao(1);
+            }
+            
+            if (window.innerWidth <= 900) {
+                resultadoEl.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        // Exibe os detalhes de uma questão específica
+        function exibirDetalhesQuestao(numero) {
+            questaoSelecionada = numero;
+            const resultado = resultadosQuestoes[numero - 1];
+            
+            // Atualizar classes ativas
+            document.querySelectorAll('.question-result').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelector(`.question-result:nth-child(${numero})`).classList.add('active');
+            
+            // Gerar detalhes da questão
+            let explicacao = "";
+            
+            if (resultado.marcouIncorreta) {
+                explicacao = `<i class="fas fa-times-circle" style="color:var(--incorrect)"></i> Você marcou pelo menos uma alternativa incorreta, portanto a questão foi <span class='highlight'>zerada</span>.`;
+            } else {
+                const numCorretas = resultado.alternativasGabarito.filter(a => a.correta).length;
+                
+                let pontosPorAlternativa = 0;
+                switch(numCorretas) {
+                    case 1: pontosPorAlternativa = 6.0; break;
+                    case 2: pontosPorAlternativa = 3.0; break;
+                    case 3: pontosPorAlternativa = 2.0; break;
+                    case 4: pontosPorAlternativa = 1.5; break;
+                    case 5: pontosPorAlternativa = 1.2; break;
+                    default: pontosPorAlternativa = 0;
+                }
+                
+                explicacao = `<i class="fas fa-check-circle" style="color:var(--correct)"></i> O gabarito tem <span class='highlight'>${numCorretas}</span> alternativa(s) correta(s) (${getAlternativasCorretas(resultado.alternativasGabarito)}).<br>`;
+                explicacao += `<i class="fas fa-bullseye" style="color:var(--highlight-pink)"></i> Você acertou <span class='highlight'>${resultado.acertos}</span> delas.<br>`;
+                explicacao += `<i class="fas fa-chart-bar" style="color:var(--highlight-pink)"></i> Como há ${numCorretas} alternativa(s) correta(s), cada acerto vale <span class='highlight'>${pontosPorAlternativa.toFixed(1)}</span> ponto(s).<br>`;
+            }
+            
+            // Gerar tabela de detalhes
             document.getElementById('detalhes').innerHTML = `
-                <p><i class="fas fa-user-edit icon"></i><strong>Sua resposta:</strong> ${resposta}</p>
-                <p><i class="fas fa-clipboard-check icon"></i><strong>Gabarito:</strong> ${gabarito}</p>
+                <p><i class="fas fa-user-edit icon"></i><strong>Sua resposta:</strong> ${resultado.resposta.toString().padStart(2, '0')}</p>
+                <p><i class="fas fa-clipboard-check icon"></i><strong>Gabarito:</strong> ${resultado.gabarito.toString().padStart(2, '0')}</p>
+                <p><i class="fas fa-star icon"></i><strong>Pontuação:</strong> <span class="${resultado.status}">${resultado.pontuacao.toFixed(1)}</span></p>
                 
                 <table>
                     <thead>
@@ -386,29 +622,26 @@
                         </tr>
                     </thead>
                     <tbody>
-                    ${alternativasResposta.map((alt, i) => `
+                    ${resultado.alternativasResposta.map((alt, i) => `
                         <tr>
                             <td>${['01', '02', '04', '08', '16'][i]}</td>
                             <td>${alt.marcada ? '<i class="fas fa-check" style="color:var(--highlight-pink)"></i>' : '<i class="fas fa-times" style="color:var(--medium-pink)"></i>'}</td>
-                            <td>${alternativasGabarito[i].correta ? '<i class="fas fa-check" style="color:var(--highlight-pink)"></i>' : '<i class="fas fa-times" style="color:var(--medium-pink)"></i>'}</td>
-                            <td class="${getClasseResultado(alt.marcada, alternativasGabarito[i].correta)}">
-                                ${getTextoResultado(alt.marcada, alternativasGabarito[i].correta)}
+                            <td>${resultado.alternativasGabarito[i].correta ? '<i class="fas fa-check" style="color:var(--highlight-pink)"></i>' : '<i class="fas fa-times" style="color:var(--medium-pink)"></i>'}</td>
+                            <td class="${getClasseResultado(alt.marcada, resultado.alternativasGabarito[i].correta)}">
+                                ${getTextoResultado(alt.marcada, resultado.alternativasGabarito[i].correta)}
                             </td>
                         </tr>
                     `).join('')}
                     </tbody>
                 </table>
+                
+                <div class="explanation">
+                    ${explicacao}
+                </div>
             `;
-            
-            document.getElementById('pontuacao').innerHTML = explicacao;
-            const resultadoEl = document.getElementById('resultado');
-            resultadoEl.style.display = 'flex';
-            
-            if (window.innerWidth <= 900) {
-                resultadoEl.scrollIntoView({ behavior: 'smooth' });
-            }
         }
         
+        // Funções auxiliares
         function getAlternativasCorretas(alternativas) {
             // Ordena para exibir sempre do menor para o maior na explicação
             const corretas = alternativas.filter(a => a.correta).map(a => a.valor).sort((a,b) => a - b);
@@ -427,7 +660,11 @@
             if (!marcada && correta) return '<i class="fas fa-exclamation-triangle" style="color:var(--highlight-pink)"></i> Não marcou (deveria)';
             return '<i class="fas fa-minus" style="color:var(--medium-pink)"></i> Não marcou (ok)';
         }
+        
+        // Inicializar a página
+        window.onload = inicializarInputs;
     </script>
 
 </body>
 </html>
+
